@@ -1,45 +1,13 @@
-ingress:
-  host: chart-example.local
-  ingressClassName: nginx
-
-gitRepository: laszlocph/demo-app
-gitSha: xyz
-
-
-volumes:
-  - name: testing
-    path: /deleteme
-    hostPath:
-      path: /deleteme
-  - name: empty
-    path: /deleteme2
-    emptyDir: true
-  - name: volume-name
-    existingSecret: my-secret
-    path: /randomPath/app.creds
-    subPath: app.creds
-
-vars:
-  var1: value1
-  var2: value2
-
-probe:
-  enabled: true
-  settings:
-    periodSeconds: 30
-
-podSpec:
-  hostNetwork: true
-
 cnpg:
   enabled: true
 
   superuser:
-    enabled: false
+    enabled: true
     secretName: cnpg-postgres-admin
 
   cluster:
     name: postgres
+    imageName: ghcr.io/cloudnative-pg/postgresql:16.8-13-bullseye
     instances: 1
     storage:
       size: 5Gi
@@ -56,23 +24,30 @@ cnpg:
         memory: "4Gi"
 
   postgresAuth:
+    create: true
+    secretName: cnpg-postgres-secret
     username: cnpg
     password: ch@ngem3#
+    type: kubernetes.io/basic-auth
 
   backup:
-    enabled: false
+    enabled: true
     retentionPolicy: "7d"
     barmanObjectStore:
       serverName: postgres-backup
       destinationPath: s3://postgres-backup/
-      endpointURL: https://seaweed-dso.mea-poc.opsta.in.th/buckets/
+      endpointURL: https://s3.domain.co.th/buckets/
       s3Credentials:
         create: true
+        secretName: cnpg-secret-s3
         accessKeyValue: admin
         secretKeyValue: ch@ngem3#
+      compression:
+        data: gzip
+        wal: gzip
 
   scheduledBackup:
-    enabled: false
+    enabled: true
     schedule: "0 0 0 * * *"
     backupOwnerReference: self
     immediate: true
@@ -81,5 +56,6 @@ cnpg:
     enabled: true
     database: cnpg
     owner: cnpg
+    secretName: cnpg-postgres-secret
 
   
