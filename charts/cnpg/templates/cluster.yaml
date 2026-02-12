@@ -1,49 +1,57 @@
-{{- if .Values.cnpg.enabled }}
-{{- $cnpg := .Values.cnpg -}}
-{{- $backup := $cnpg.backup -}}
+{{- if .Values.enabled -}}
+#{{- $cnpg := .Values.cnpg -}}
+{{- $backup := .Values.backup -}}
 {{- $bos := $backup.barmanObjectStore -}}
 {{- $s3 := $bos.s3Credentials -}}
+{{- $defaultS3Secret := printf "%s-cnpg-s3-creds" .Release.Name | trunc 63 | trimSuffix "-" -}}
+
+
+{{- $s3SecretName := $defaultS3Secret -}}
+
+{{- if and $backup.enabled (not $s3SecretName) -}}
+{{- fail "backup.enabled=true but S3 secret name resolved empty (unexpected)" -}}
+{{- end -}}
 
 apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
-  name: {{ $cnpg.cluster.name | quote }}
+  name: {{ printf "%s-cnpg" .Release.Name | trunc 63 | trimSuffix "-" | quote }}
 spec:
-  imageName: {{ $cnpg.cluster.imageName | quote }}
-  instances: {{ $cnpg.cluster.instances }}
+  imageName: {{ .Values.cluster.imageName | quote }}
+  instances: {{ .Values.cluster.instances }}
 
-   {{- if $cnpg.superuser.enabled }}
+  {{- if .Values.superuser.enabled }}
   enableSuperuserAccess: true
   superuserSecret:
-    name: {{ required "cnpg.superuser.secretName is required when cnpg.superuser.enabled=true" $cnpg.superuser.secretName | quote }}
+    name: {{ printf "%s-cnpg-admin-creds" .Release.Name | trunc 63 | trimSuffix "-" | quote }}
   {{- end }}
 
-  {{- with $cnpg.cluster.resources }}
+  {{- with .Values.cluster.resources }}
   resources:
     {{- toYaml . | nindent 4 }}
   {{- end }}
 
   storage:
-    size: {{ $cnpg.cluster.storage.size | quote }}
-    storageClass: {{ $cnpg.cluster.storage.storageClass | quote }}
+    size: {{ .Values.cluster.storage.size | quote }}
+    storageClass: {{ .Values.cluster.storage.storageClass | quote }}
 
   walStorage:
-    size: {{ $cnpg.cluster.walStorage.size | quote }}
-    storageClass: {{ $cnpg.cluster.walStorage.storageClass | quote }}
+    size: {{ .Values.cluster.walStorage.size | quote }}
+    storageClass: {{ .Values.cluster.walStorage.storageClass | quote }}
 
   {{- if $backup.enabled }}
   backup:
     retentionPolicy: {{ $backup.retentionPolicy | quote }}
     barmanObjectStore:
-      serverName: {{ $bos.serverName | quote }}
+      serverName: {{ printf "%s-cnpg-backup" .Release.Name | trunc 63 | trimSuffix "-" | quote }}
       destinationPath: {{ $bos.destinationPath | quote }}
       endpointURL: {{ $bos.endpointURL | quote }}
       s3Credentials:
         accessKeyId:
-          name: {{ required "cnpg.backup.barmanObjectStore.s3Credentials.secretName is required" $s3.secretName | quote }}
+          name: {{ $s3SecretName | quote }}
           key: {{ default "S3_ACCESS_KEY" $s3.accessKeyKey | quote }}
         secretAccessKey:
-          name: {{ required "cnpg.backup.barmanObjectStore.s3Credentials.secretName is required" $s3.secretName | quote }}
+          name: {{ $s3SecretName | quote }}
           key: {{ default "S3_SECRET_KEY" $s3.secretKeyKey | quote }}
       data:
         compression: {{ $bos.compression.data | quote }}
@@ -51,32 +59,11 @@ spec:
         compression: {{ $bos.compression.wal | quote }}
   {{- end }}
 
-  {{- if $cnpg.bootstrap.enabled }}
+  {{- if .Values.bootstrap.enabled }}
   bootstrap:
     initdb:
-      database: {{ $cnpg.bootstrap.database | quote }}
-      owner: {{ $cnpg.bootstrap.owner | quote }}
-      secret:
-        name: {{ $cnpg.bootstrap.secretName | quote }}
-
-      {{- with $cnpg.bootstrap.postInitSQL }}
-      postInitSQL:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-
-      {{- $refs := .Values.cnpg.bootstrap.postInitApplicationSQLRefs -}}
-      {{- if and $refs (or $refs.secretRefs $refs.configMapRefs) }}
-      postInitApplicationSQLRefs:
-        {{- if $refs.secretRefs }}
-        secretRefs:
-          {{- toYaml $refs.secretRefs | nindent 10 }}
-        {{- end }}
-        {{- if $refs.configMapRefs }}
-        configMapRefs:
-          {{- toYaml $refs.configMapRefs | nindent 10 }}
-        {{- end }}
-      {{- end }}
+{{- toYaml .Values.bootstrap.initdb | nindent 6 }}
+      secretName:
+        name: {{ printf "%s-cnpg-app-creds" .Release.Name | trunc 63 | trimSuffix "-" | quote }}
   {{- end }}
-{{- end }}
-
-      
+{{- end -}}

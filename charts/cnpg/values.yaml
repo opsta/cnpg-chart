@@ -1,61 +1,59 @@
-cnpg:
+enabled: true
+
+superuser:
   enabled: true
 
-  superuser:
-    enabled: true
-    secretName: cnpg-postgres-admin
+cluster:
+  imageName: ghcr.io/cloudnative-pg/postgresql:16.8-13-bullseye
+  instances: 3
+  storage:
+    size: 5Gi
+    storageClass: standard
+  walStorage:
+    size: 2Gi
+    storageClass: standard
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "4Gi"
 
-  cluster:
-    name: postgres
-    imageName: ghcr.io/cloudnative-pg/postgresql:16.8-13-bullseye
-    instances: 1
-    storage:
-      size: 5Gi
-      storageClass: standard
-    walStorage:
-      size: 2Gi
-      storageClass: standard
-    resources:
-      requests:
-        cpu: "500m"
-        memory: "1Gi"
-      limits:
-        cpu: "2"
-        memory: "4Gi"
+postgresAuth:
+  create: true
+  username: cnpg
+  password: ch@ngem3#
 
-  postgresAuth:
-    create: true
-    secretName: cnpg-postgres-secret
-    username: cnpg
-    password: ch@ngem3#
-    type: kubernetes.io/basic-auth
+backup:
+  enabled: true
+  retentionPolicy: "7d"
+  barmanObjectStore:
+    destinationPath: s3://postgres-backup/
+    endpointURL: https://seaweed-dso.mea-poc.opsta.in.th/buckets/
+    s3Credentials:
+      create: true
+      accessKeyValue: admin
+      secretKeyValue: ch@ngem3#
+    compression:
+      data: gzip
+      wal: gzip
 
-  backup:
-    enabled: true
-    retentionPolicy: "7d"
-    barmanObjectStore:
-      serverName: postgres-backup
-      destinationPath: s3://postgres-backup/
-      endpointURL: https://s3.domain.co.th/buckets/
-      s3Credentials:
-        create: true
-        secretName: cnpg-secret-s3
-        accessKeyValue: admin
-        secretKeyValue: ch@ngem3#
-      compression:
-        data: gzip
-        wal: gzip
+scheduledBackup:
+  enabled: true
+  schedule: "0 0 * * *"
+  backupOwnerReference: self
+  immediate: true
 
-  scheduledBackup:
-    enabled: true
-    schedule: "0 0 0 * * *"
-    backupOwnerReference: self
-    immediate: true
-
-  bootstrap:
-    enabled: true
+bootstrap:
+  enabled: true
+  initdb: 
     database: cnpg
     owner: cnpg
-    secretName: cnpg-postgres-secret
-
-  
+    localeCollate: 'en_US'
+    localeCType: 'en_US'
+    encoding: 'LATIN1'
+    postInitSQL:
+    postInitApplicationSQLRefs:
+      secretRefs:
+      configMapRefs:

@@ -34,52 +34,29 @@ podSpec:
 cnpg:
   enabled: true
 
-  superuser:
-    enabled: false
-    secretName: cnpg-postgres-admin
-
   cluster:
-    name: postgres
-    instances: 1
+    instances: 3
     storage:
       size: 5Gi
       storageClass: standard
     walStorage:
       size: 2Gi
       storageClass: standard
-    resources:
-      requests:
-        cpu: "500m"
-        memory: "1Gi"
-      limits:
-        cpu: "2"
-        memory: "4Gi"
 
   postgresAuth:
     username: cnpg
     password: ch@ngem3#
 
   backup:
-    enabled: false
     retentionPolicy: "7d"
     barmanObjectStore:
-      serverName: postgres-backup
-      destinationPath: s3://postgres-backup/
       endpointURL: https://seaweed-dso.mea-poc.opsta.in.th/buckets/
       s3Credentials:
-        create: true
         accessKeyValue: admin
         secretKeyValue: ch@ngem3#
 
-  scheduledBackup:
-    enabled: false
-    schedule: "0 0 0 * * *"
-    backupOwnerReference: self
-    immediate: true
-
   bootstrap:
-    enabled: true
-    database: cnpg
-    owner: cnpg
+    initdb: 
+      database: cnpg
+      owner: cnpg
 
-  
