@@ -22,19 +22,19 @@ cluster:
 
 postgresAuth:
   create: true
-  username: cnpg
-  password: ch@ngem3#
+  username: 
+  password: 
 
 backup:
   enabled: true
   retentionPolicy: "7d"
   barmanObjectStore:
-    destinationPath: s3://postgres-backup/
-    endpointURL: https://seaweed-dso.mea-poc.opsta.in.th/buckets/
+    destinationPath: s3://postgres-backups/
+    endpointURL: https://opsta.in.th/buckets/
     s3Credentials:
-      create: true
-      accessKeyValue: admin
-      secretKeyValue: ch@ngem3#
+      create: false
+      accessKeyValue: 
+      secretKeyValue: 
     compression:
       data: gzip
       wal: gzip
@@ -50,10 +50,4 @@ bootstrap:
   initdb: 
     database: cnpg
     owner: cnpg
-    localeCollate: 'en_US'
-    localeCType: 'en_US'
-    encoding: 'UTF8'
-    postInitSQL:
-    postInitApplicationSQLRefs:
-      secretRefs:
-      configMapRefs:
+

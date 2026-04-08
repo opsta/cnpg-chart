@@ -1,9 +1,8 @@
 apiVersion: v1
-description: CNPG (China Postgres)
+description: Cloud Native Postgres
 name: cnpg
 version: 0.1.0
 appVersion: 0.1.0
-home: /
 maintainers:
   - name: Developer
     email: dev@opsta.in.th
