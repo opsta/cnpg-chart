@@ -90,8 +90,9 @@ jobs:
           --username ${{ github.repository_owner }} \
           --password-stdin
 
-        helm push docs/cnpg-chart-${{ env.TAG_VERSION }}.tgz oci://ghcr.io/${{ github.repository_owner }}
-
+        helm push docs/onechart-${{ env.TAG_VERSION }}.tgz oci://ghcr.io/${{ github.repository_owner }}
+        helm push docs/cron-job-${{ env.TAG_VERSION }}.tgz oci://ghcr.io/${{ github.repository_owner }}
+        helm push docs/static-site-${{ env.TAG_VERSION }}.tgz oci://ghcr.io/${{ github.repository_owner }}
       env:
         TAG_VERSION: ${{ steps.versioning.outputs.tag_version }}
 
