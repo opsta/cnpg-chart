@@ -16,10 +16,6 @@ image:
 # vars:
 #   MY_VAR: "value"
 
-serviceAccount:
-  create: false
-  # name: my-service-account
-
 replicas: 1
 
 nameOverride: ""
@@ -84,6 +80,14 @@ monitor:
 
 container: {}
 podSpec: {}
-
 # service:
 #   enabled: false
+
+# sharedSecretFiles:
+#   - name: opsta-secret
+#     files:
+#       - mountPath: /etc/conf/config.json
+#         subPath: config.json
+#       - mountPath: /etc/app/template.yaml
+#         subPath: template.yaml
+
