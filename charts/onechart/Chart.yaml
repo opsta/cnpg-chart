@@ -1,5 +1,5 @@
 apiVersion: v2
-name: onechart
+name: onechart-cnpg
 description: One chart to rule them all. A generic Helm chart for your application deployments. Because no-one can remember the Kubernetes yaml syntax.
 
 # A chart can be either an 'application' or a 'library' chart.

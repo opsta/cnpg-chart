@@ -39,8 +39,8 @@ test:
 
 package:
 	helm dependency update charts/onechart
-	helm package charts/onechart
-	mv onechart*.tgz docs
+	helm package charts/onechart -d docs
+	
 
 	helm dependency update charts/cron-job
 	helm package charts/cron-job
